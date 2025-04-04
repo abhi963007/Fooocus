@@ -563,6 +563,6 @@ Note that if no `--language` is given and at the same time `Fooocus/language/def
 
 <div align="center">
   
-### Last updated: April 2024
+### Last updated: April 2025
   
 </div>
