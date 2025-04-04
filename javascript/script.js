@@ -265,55 +265,92 @@ function htmlDecode(input) {
 // Remove Gradio footer
 document.addEventListener('DOMContentLoaded', function() {
   function removeFooters() {
-    // Access the Gradio app container (including shadow DOM)
-    const app = gradioApp();
-    if (!app) return;
-    
-    // Try various selectors to find and remove the footer
-    var footerSelectors = [
-      'footer', 
-      '.footer', 
-      '[class*="footer"]', 
-      '#footer',
-      'div[class*="footer"]',
-      '.gradio-container > div:last-child:not(.progress-bar)',
-      '.gradio-footer'
-    ];
-    
-    footerSelectors.forEach(function(selector) {
-      var elements = app.querySelectorAll(selector);
-      for (var i = 0; i < elements.length; i++) {
-        if (elements[i].innerHTML && (
-            elements[i].innerHTML.includes('Gradio') || 
-            elements[i].innerHTML.includes('API') ||
-            elements[i].textContent.includes('Gradio') || 
-            elements[i].textContent.includes('API'))) {
-          elements[i].style.display = 'none';
-          elements[i].innerHTML = '';
-          try {
-            elements[i].remove();
-          } catch(e) {
-            console.log('Could not remove element, hiding instead');
-          }
-        }
-      }
-    });
-    
-    // Also try to find and remove the specific footer in Gradio v3.x
     try {
-      const footerElement = app.querySelector('div[class*="footer"]');
-      if (footerElement) {
-        footerElement.style.display = 'none';
-        footerElement.innerHTML = '';
+      // Access the Gradio app container (including shadow DOM)
+      const app = gradioApp();
+      if (!app) return;
+      
+      // Try various selectors to find and remove the footer
+      var footerSelectors = [
+        'footer', 
+        '.footer', 
+        '[class*="footer"]', 
+        '#footer',
+        'div[class*="footer"]',
+        '.gradio-container > div:last-child:not(.progress-bar)',
+        '.gradio-footer'
+      ];
+      
+      footerSelectors.forEach(function(selector) {
+        try {
+          var elements = app.querySelectorAll(selector);
+          for (var i = 0; i < elements.length; i++) {
+            try {
+              var element = elements[i];
+              if (element && element.textContent && 
+                 (element.textContent.includes('Gradio') || 
+                  element.textContent.includes('API'))) {
+                element.style.display = 'none';
+                try {
+                  // Just hide instead of modifying innerHTML to avoid JSON parsing issues
+                  // element.innerHTML = '';
+                  element.style.visibility = 'hidden';
+                  element.style.height = '0';
+                  element.style.padding = '0';
+                  element.style.margin = '0';
+                } catch(e) {
+                  console.log('Could not modify element, just hiding it');
+                }
+              }
+            } catch(e) {
+              console.log('Error processing element:', e);
+            }
+          }
+        } catch(e) {
+          console.log('Error with selector:', selector, e);
+        }
+      });
+      
+      // Target specifically the footer with API text without modifying its content
+      try {
+        const apiElements = app.querySelectorAll('div');
+        for (var i = 0; i < apiElements.length; i++) {
+          try {
+            var el = apiElements[i];
+            if (el && el.textContent && 
+               (el.textContent.includes('Use via API') || 
+                el.textContent.includes('Built with Gradio'))) {
+              el.style.display = 'none';
+              el.style.visibility = 'hidden';
+              el.style.height = '0';
+            }
+          } catch(e) {}
+        }
+      } catch(e) {
+        console.log('Error targeting API elements:', e);
       }
     } catch(e) {
-      console.log('Error targeting footer:', e);
+      console.log('Global error in removeFooters:', e);
     }
   }
   
   // Run on initial load and also when UI updates
-  removeFooters();
-  onUiUpdate(removeFooters);
-  // Also set an interval as a fallback
-  setInterval(removeFooters, 2000);
+  try {
+    removeFooters();
+    if (typeof onUiUpdate === 'function') {
+      onUiUpdate(function() {
+        try {
+          removeFooters();
+        } catch(e) {}
+      });
+    }
+    // Also set an interval as a fallback
+    setInterval(function() {
+      try {
+        removeFooters();
+      } catch(e) {}
+    }, 2000);
+  } catch(e) {
+    console.log('Error setting up footer removal:', e);
+  }
 });
