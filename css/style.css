@@ -416,3 +416,24 @@ div:has(> #positive_prompt) {
 #inpaint_brush_color input[type=color]{
   background: none;
 }
+
+/* Hide Gradio footer */
+footer {
+  display: none !important;
+}
+
+/* More specific selectors for Gradio footer */
+.gradio-container footer,
+.footer,
+.gradio-footer,
+div[class*="footer"],
+#footer,
+div[id*="footer"],
+.gradio-container > div:last-child:not(.progress-bar) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}

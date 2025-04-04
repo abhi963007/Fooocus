@@ -261,3 +261,59 @@ function htmlDecode(input) {
   var doc = new DOMParser().parseFromString(input, "text/html");
   return doc.documentElement.textContent;
 }
+
+// Remove Gradio footer
+document.addEventListener('DOMContentLoaded', function() {
+  function removeFooters() {
+    // Access the Gradio app container (including shadow DOM)
+    const app = gradioApp();
+    if (!app) return;
+    
+    // Try various selectors to find and remove the footer
+    var footerSelectors = [
+      'footer', 
+      '.footer', 
+      '[class*="footer"]', 
+      '#footer',
+      'div[class*="footer"]',
+      '.gradio-container > div:last-child:not(.progress-bar)',
+      '.gradio-footer'
+    ];
+    
+    footerSelectors.forEach(function(selector) {
+      var elements = app.querySelectorAll(selector);
+      for (var i = 0; i < elements.length; i++) {
+        if (elements[i].innerHTML && (
+            elements[i].innerHTML.includes('Gradio') || 
+            elements[i].innerHTML.includes('API') ||
+            elements[i].textContent.includes('Gradio') || 
+            elements[i].textContent.includes('API'))) {
+          elements[i].style.display = 'none';
+          elements[i].innerHTML = '';
+          try {
+            elements[i].remove();
+          } catch(e) {
+            console.log('Could not remove element, hiding instead');
+          }
+        }
+      }
+    });
+    
+    // Also try to find and remove the specific footer in Gradio v3.x
+    try {
+      const footerElement = app.querySelector('div[class*="footer"]');
+      if (footerElement) {
+        footerElement.style.display = 'none';
+        footerElement.innerHTML = '';
+      }
+    } catch(e) {
+      console.log('Error targeting footer:', e);
+    }
+  }
+  
+  // Run on initial load and also when UI updates
+  removeFooters();
+  onUiUpdate(removeFooters);
+  // Also set an interval as a fallback
+  setInterval(removeFooters, 2000);
+});
