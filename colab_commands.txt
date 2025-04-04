@@ -1,4 +1,4 @@
-# Run these commands in a Colab cell:
+# FIRST CELL - Run these commands:
 
 !pip install pygit2==1.15.1
 %cd /content
@@ -6,7 +6,10 @@
 %cd /content/Fooocus
 !python entry_with_update.py --share --always-high-vram --disable-analytics
 
-# After Gradio launches and shows the public URL, run this in a NEW CELL to hide the footer:
+# -----------------------------------------------------
+# SECOND CELL - Run this EXACTLY as shown (with the %%html magic command):
+# -----------------------------------------------------
+
 %%html
 <script>
 // Function to hide the Gradio footer
@@ -42,4 +45,37 @@ function hideGradioFooter() {
 // Run initially and then set interval to keep checking (in case iframe reloads)
 hideGradioFooter();
 setInterval(hideGradioFooter, 2000);
-</script> 
+</script>
+
+# -----------------------------------------------------
+# Alternative solution - run this in a THIRD CELL if the above doesn't work:
+# -----------------------------------------------------
+
+from IPython.display import HTML, display
+
+hide_footer_js = """
+<script>
+function hideGradioFooter() {
+  const iframes = document.querySelectorAll('iframe');
+  iframes.forEach(iframe => {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      const style = iframeDoc.createElement('style');
+      style.textContent = `
+        footer, .footer, div[class*="footer"], [data-testid="footer"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          height: 0 !important;
+        }
+      `;
+      iframeDoc.head.appendChild(style);
+    } catch(e) {}
+  });
+}
+
+setInterval(hideGradioFooter, 1000);
+</script>
+"""
+
+display(HTML(hide_footer_js)) 
