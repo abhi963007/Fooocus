@@ -4,4 +4,42 @@
 %cd /content
 !git clone https://github.com/abhi963007/Fooocus.git
 %cd /content/Fooocus
-!python entry_with_update.py --share --always-high-vram --disable-analytics 
+!python entry_with_update.py --share --always-high-vram --disable-analytics
+
+# After Gradio launches and shows the public URL, run this in a NEW CELL to hide the footer:
+%%html
+<script>
+// Function to hide the Gradio footer
+function hideGradioFooter() {
+  // Find all iframes (Gradio app is usually in an iframe)
+  const iframes = document.querySelectorAll('iframe');
+  iframes.forEach(iframe => {
+    try {
+      // Try to access the iframe content
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      
+      // Create a style element to inject CSS
+      const style = iframeDoc.createElement('style');
+      style.textContent = `
+        footer, .footer, [class*="footer"], div[class*="footer"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+      `;
+      
+      // Append the style to the iframe document head
+      iframeDoc.head.appendChild(style);
+    } catch(e) {
+      console.log('Could not access iframe content:', e);
+    }
+  });
+}
+
+// Run initially and then set interval to keep checking (in case iframe reloads)
+hideGradioFooter();
+setInterval(hideGradioFooter, 2000);
+</script> 
